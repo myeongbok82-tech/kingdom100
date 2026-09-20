@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.webmanifest">
+<title>100성 국가경영 — 살아있는 세계 v3</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#e5e7eb;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+.wrap{max-width:1380px;margin:auto;padding:10px}.top,.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.clock{font-weight:900;font-size:1.15rem}.muted{color:#9ca3af;font-size:.85rem}.big{font-size:1.16rem;font-weight:850}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:7px;margin:9px 0}
+.card,.panel{background:#151f30;border:1px solid #2b3a50;border-radius:10px;padding:10px}.panel{margin-bottom:8px}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;margin:9px 0}.pane{display:none}.pane.active{display:block}
+button,input,select{background:#0b1220;color:#e5e7eb;border:1px solid #475569;border-radius:7px;padding:7px;font-size:.92rem}
+button{cursor:pointer}.tab.active,button.primary{background:#334155}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{padding:6px;border-bottom:1px solid #2b3a50;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
+.scroll{overflow:auto}.good{color:#86efac}.bad{color:#fca5a5}.warn{color:#fde68a}.clickrow{cursor:pointer}.clickrow:hover{background:#25344a}.rankme{background:#26364d}
+.log{font-family:ui-monospace,monospace;font-size:.8rem;white-space:pre-wrap;line-height:1.45;max-height:430px;overflow:auto}
+.chart{height:190px;width:100%;background:#0b1220;border-radius:8px}h2,h3{margin:7px 0 9px}
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}.wrap{padding:7px}}
+</style>
+</head>
+<body><div class="wrap">
+<div class="top">
+ <div><h2>100성 국가경영 — 살아있는 세계 v3</h2><div class="muted">국가는 큰 방향을 정하고 사회·시장·행정은 스스로 움직입니다.</div></div>
+ <div><div id="clock" class="clock"></div><div class="muted">현실 1시간 = 게임 1일</div></div>
+</div>
+<div id="summary" class="cards"></div>
+<div class="tabs">
+<button class="tab active" data-p="realm">내 국가</button><button class="tab" data-p="pop">인구/인재</button><button class="tab" data-p="mil">군사/전쟁</button>
+<button class="tab" data-p="econ">경제/시장</button><button class="tab" data-p="gov">행정/사법</button><button class="tab" data-p="stats">통계청</button>
+<button class="tab" data-p="world">100개국</button><button class="tab" data-p="logs">기록</button><button class="tab" data-p="developer">개발자/감사</button>
+</div>
+
+<section id="realm" class="pane active panel"><h3>국가 현황</h3><div id="realmBody"></div></section>
+<section id="pop" class="pane panel"><h3>인구·직업</h3><div id="popBody"></div><h3>등용 후보</h3><div id="candidateBody"></div><h3>국가직 공무원</h3><div id="officialBody"></div><h3>인재 육성</h3><div id="trainingBody"></div></section>
+<section id="mil" class="pane panel">
+<h3>복무제도</h3><div id="serviceBody"></div><h3>군 편제·병과</h3><div id="armyBody"></div>
+<h3>출정 검토</h3><div class="card"><div class="row"><label>목표 <select id="target"></select></label><label>출정병 <input id="attackN" type="number" min="100" value="1000"></label><label>총사령관 <select id="commander"></select></label><button id="reviewAttack" class="primary">출정 검토</button></div><div id="attackReview"></div></div>
+<h3>진행 중 이동</h3><div id="movements"></div><h3>최근 전투</h3><div id="combatLog" class="log"></div>
+</section>
+<section id="econ" class="pane panel"><h3>경제·시장</h3><div id="econBody"></div>
+<div class="grid2"><div class="card"><b>쌀 시장</b><div class="row"><input id="riceQty" type="number" min="1" value="100"><button id="buyRice">국가 매입</button><button id="sellRice">국가 매각</button></div><div id="riceInfo"></div></div>
+<div class="card"><b>쌀 시세 이력</b> <select id="priceRange"><option value="30">30일</option><option value="90">3개월</option><option value="360" selected>1년</option><option value="1800">5년</option><option value="99999">전체</option></select><canvas id="priceChart" class="chart"></canvas></div></div>
+<h3>자원·산업</h3><div id="industryBody"></div></section>
+<section id="gov" class="pane panel"><h3>국가 조직</h3><div id="govBody"></div><h3>감사·사법</h3><div id="justiceBody"></div><h3>특별 임무팀</h3><div id="tfBody"></div></section>
+<section id="stats" class="pane panel"><h3>통계청</h3><div id="statsBody"></div><canvas id="statsChart" class="chart"></canvas></section>
+<section id="world" class="pane panel"><h3>100개국 공개정보</h3><div class="scroll"><table><thead><tr><th>국가</th><th>인구</th><th>병력 추정</th><th>성벽</th><th>쌀값</th><th>작황</th></tr></thead><tbody id="worldTable"></tbody></table></div></section>
+<section id="logs" class="pane panel"><h3>세계 기록</h3><select id="logFilter"><option value="all">전체</option><option value="war">전쟁</option><option value="economy">경제</option><option value="population">인구</option><option value="government">행정/사법</option></select><div id="eventLog" class="log"></div></section>
+<section id="developer" class="pane panel"><div class="row"><h3>개발자 / 감사 True State</h3><select id="rankBy"><option value="treasury">국고순</option><option value="privateCash">민간화폐순</option><option value="army">병력순</option><option value="pop">인구순</option><option value="wall">성벽순</option></select></div>
+<div id="auditCards" class="cards"></div><div class="muted">국가 행을 누르면 아래에 실제 숨은 값까지 표시됩니다.</div>
+<div class="scroll"><table><thead><tr><th>#</th><th>국가</th><th>국고</th><th>민간화폐</th><th>인구</th><th>실제병력</th><th>성벽</th><th>책략</th><th>부패</th></tr></thead><tbody id="devTable"></tbody></table></div><div id="devDetail"></div></section>
+<div class="panel"><div class="row"><button id="reset">세계 초기화</button><span class="muted">기존 저장키 kingdom100_complete_v1 유지 · v2 저장 자동 승계</span></div></div>
+</div>
+
+<script>
+(()=>{'use strict';
+const KEY='kingdom100_complete_v1',DAY=3600000,MONTH=DAY*30,YEAR=MONTH*12,TICK=DAY/24;
+const $=s=>document.querySelector(s),fmt=n=>Math.round(Number(n)||0).toLocaleString('ko-KR'),clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),rnd=(a,b)=>a+Math.random()*(b-a);
+function rng(seed){let x=seed|0;return()=>{x=(x*1664525+1013904223)|0;return(x>>>0)/4294967296}}
+const names=['청운','백호','적월','금성','흑산','해동','천령','무진','송악','용천','가람','태백','은하','대림','비룡','창해','월성','운봉','하진','청림'];
+const depts=['군사부','재정부','농정부','건설부','외교부','정보부','치안부','교육기술부','감사원','검찰'];
+const pnames=['강민','서윤','도현','하진','유진','지훈','수현','민재','지우','현우','준서','예준','서진','태윤','은우','시우','정우','유준'];
+const roles=['장수','전략가','행정가','재정가','기술자','학자','법률가','수사관','농업가','건축가'];
+function person(seed,i=0){let r=rng(seed*7919+i*101+17);return{id:'P'+seed+'_'+i,name:pnames[Math.floor(r()*pnames.length)]+String.fromCharCode(65+i%26),age:22+Math.floor(r()*36),role:roles[Math.floor(r()*roles.length)],skill:40+Math.round(r()*55),command:30+Math.round(r()*65),strategy:30+Math.round(r()*65),learning:40+Math.round(r()*55),integrity:Math.round(r()*100),loyalty:40+Math.round(r()*58),potential:45+Math.round(r()*53),ambition:Math.round(r()*100),wealth:100+Math.round(r()*2500),salary:60+Math.round(r()*180),dept:null,title:null,experience:0}}
+function makeState(i,r){let pop=Math.round(11000+r()*11000),army=Math.round(700+r()*1500);return{id:i,name:i===1?'1번국 나의 성':`${i}번국 ${names[i%names.length]}`,pop,army,trainees:0,treasury:70000+r()*70000,privateCash:450000+r()*350000,stateRice:30000+r()*30000,privateRice:70000+r()*70000,wall:12000+r()*18000,farmland:85+r()*30,agri:.85+r()*.3,trade:.85+r()*.3,admin:.85+r()*.25,ricePrice:80+r()*45,tax:10+r()*5,lastHarvest:'평년',staff:{strategy:35+r()*60,command:35+r()*60,logistics:35+r()*60,fort:35+r()*60,economy:35+r()*60,agriculture:35+r()*60},recruitPolicy:500,serviceYears:3,dischargePolicy:400,recruitedThisYear:0,dischargedThisYear:0,serviceCohorts:[Math.round(army*.34),Math.round(army*.33),Math.round(army*.33)],resources:null,units:null,officials:null,candidates:null,corruption:5+r()*20,crime:4+r()*12,priceHistory:[],statsHistory:[]}}
+function init(){let r=rng(73129),states=[];for(let i=1;i<=100;i++)states.push(makeState(i,r));return{created:Date.now(),lastReal:Date.now(),gameMs:0,lastSimTick:0,states,movements:[],battles:[],events:[],pendingAttack:null,taskForces:[],selectedAudit:1,lastYear:1}}
+let W;try{W=JSON.parse(localStorage.getItem(KEY))||init()}catch(e){W=init()}if(!W.states||W.states.length!==100)W=init();
+
+function migrate(){
+ W.events=W.events||[];W.battles=W.battles||[];W.movements=W.movements||[];W.taskForces=W.taskForces||[];W.selectedAudit=W.selectedAudit||1;W.lastSimTick=W.lastSimTick||Math.floor((W.gameMs||0)/TICK);W.lastYear=W.lastYear||1;
+ for(const s of W.states){
+  s.trainees=s.trainees||0;s.recruitPolicy=s.recruitPolicy??500;s.serviceYears=s.serviceYears||3;s.dischargePolicy=s.dischargePolicy??400;s.recruitedThisYear=s.recruitedThisYear||0;s.dischargedThisYear=s.dischargedThisYear||0;
+  s.serviceCohorts=s.serviceCohorts||[Math.round(s.army*.34),Math.round(s.army*.33),Math.round(s.army*.33)];
+  s.resources=s.resources||{wood:8000,stone:9000,iron:4000,copper:900,coal:1600,horses:700,textile:4500,salt:3000,weapons:Math.round(s.army*.8),armor:Math.round(s.army*.55),arrows:Math.round(s.army*20),carts:120,catapults:8,cannons:2};
+  s.units=s.units||{infantry:Math.round(s.army*.3),spears:Math.round(s.army*.22),archers:Math.round(s.army*.2),cavalry:Math.round(s.army*.08),engineers:Math.round(s.army*.06),artillery:Math.round(s.army*.03),logistics:Math.round(s.army*.07),band:Math.round(s.army*.04),nco:Math.round(s.army*.07),officers:Math.max(8,Math.round(s.army*.012))};
+  s.officials=s.officials||Array.from({length:18},(_,i)=>{let p=person(s.id*100+i,i);p.dept=depts[i%depts.length];p.title=i<3?'부장':i<10?'팀장':'실무관';return p});
+  s.candidates=s.candidates||Array.from({length:8},(_,i)=>person(s.id*1000+i+100,i));s.corruption=s.corruption??10;s.crime=s.crime??8;s.priceHistory=s.priceHistory||[];s.statsHistory=s.statsHistory||[];
+  s.staff=s.staff||{strategy:60,command:60,logistics:60,fort:60,economy:60,agriculture:60};
+ }
+}migrate();
+const me=()=>W.states[0];
+function gp(ms=W.gameMs){let y=Math.floor(ms/YEAR)+1,rem=ms%YEAR,mo=Math.floor(rem/MONTH)+1,dm=rem%MONTH,d=Math.floor(dm/DAY)+1,x=dm%DAY,h=Math.floor(x/(DAY/24)),mi=Math.floor((x%(DAY/24))/(DAY/1440)),se=Math.floor((x%(DAY/1440))/(DAY/86400));return{y,mo,d,h,mi,se}}
+function stamp(ms=W.gameMs){let g=gp(ms);return`${g.y}년 ${g.mo}월 ${g.d}일 ${String(g.h).padStart(2,'0')}:${String(g.mi).padStart(2,'0')}:${String(g.se).padStart(2,'0')}`}
+function log(type,msg,state=1){W.events.unshift({t:W.gameMs,type,msg,state});if(W.events.length>4000)W.events.length=4000}
+function save(){W.lastReal=Date.now();localStorage.setItem(KEY,JSON.stringify(W))}
+function distance(a,b){let d=Math.abs(a-b);return Math.min(d,100-d)}
+function travelMs(a,b){return(10+distance(a,b)*1.1)*60000}
+function harvest(s,idx){let r=rng(s.id*7919+idx*104729)();return r<.1?['흉년',.72]:r<.72?['평년',1]:r<.95?['풍년',1.28]:['대풍년',1.5]}
+function avgIntegrity(s){return s.officials.reduce((a,p)=>a+p.integrity,0)/Math.max(1,s.officials.length)}
+
+function economyHour(s,k){
+ let g=gp(),[hv,hm]=harvest(s,Math.floor(W.gameMs/MONTH));s.lastHarvest=hv;let civ=Math.max(1000,s.pop-s.army-s.trainees),prod=civ*.08*(s.farmland/100)*s.agri*hm/720,need=(s.pop*.05+s.army*.075)/720;
+ s.privateRice=Math.max(0,s.privateRice+prod-need);let tax=Math.min(s.privateCash,civ*.006*(s.tax/100)*(g.h>=8&&g.h<19?1:.3));s.privateCash-=tax;s.treasury+=tax;
+ let wage=Math.min(s.treasury,s.army*1.05/720);s.treasury-=wage;s.privateCash+=wage;
+ let pressure=(s.pop*.05)/(Math.max(1,s.privateRice/30));s.ricePrice=clamp(s.ricePrice*(1+(pressure-1)*.00025)+rnd(-.02,.02),20,500);
+ let rr=s.resources;rr.wood+=civ*.002/24;rr.stone+=civ*.0012/24;rr.iron+=civ*.0007/24;rr.coal+=civ*.00035/24;rr.textile+=civ*.001/24;rr.salt+=civ*.0007/24;
+ let craft=Math.min(rr.iron,rr.wood)*.00008;rr.weapons+=craft;rr.iron-=craft*.7;rr.wood-=craft*.3;rr.armor+=Math.min(rr.iron*.00003,civ*.00002);rr.arrows+=Math.min(rr.wood*.001,civ*.002);
+ let remain=Math.max(0,s.recruitPolicy-s.recruitedThisYear),take=Math.min(remain,s.recruitPolicy/360/24,Math.max(0,s.pop-s.army-s.trainees-1500));s.trainees+=take;s.recruitedThisYear+=take;
+ let train=Math.min(s.trainees,Math.max(1,s.recruitPolicy)/360/24*.9);s.trainees-=train;s.army+=train;
+ if(k%24===0){s.priceHistory.push({t:W.gameMs,p:s.ricePrice});if(s.priceHistory.length>2200)s.priceHistory.shift();s.statsHistory.push({t:W.gameMs,pop:s.pop,army:s.army,cash:s.treasury,rice:s.ricePrice});if(s.statsHistory.length>2200)s.statsHistory.shift();if(s.id===1)log('economy',`일일정산 · 쌀 ${s.ricePrice.toFixed(1)}엽전 · 생산 ${fmt(prod*24)}석`)}
+ if(k%720===0){s.corruption=clamp(s.corruption+rnd(-1.5,1.5)+(100-avgIntegrity(s))/500,0,100);s.crime=clamp(s.crime+rnd(-1,1)+(s.corruption-30)/100,0,100)}
+}
+function yearTurn(y){for(const s of W.states){let eligible=s.serviceCohorts.shift()||0,target=Math.min(eligible,s.dischargePolicy),loss=Math.min(s.army,target);s.army-=loss;s.dischargedThisYear=loss;s.serviceCohorts.push(Math.max(0,Math.round(s.recruitedThisYear)));s.recruitedThisYear=0;for(const p of s.officials){p.age++;p.experience++}for(const p of s.candidates)p.age++;if(s.id===1)log('population',`복무연도 종료 · ${fmt(loss)}명 전역`)}} 
+function simulateTo(ms){let end=Math.floor(ms/TICK),start=W.lastSimTick||0;if(end-start>9000)start=end-9000;for(let k=start+1;k<=end;k++){W.gameMs=k*TICK;let y=gp().y;if(y>W.lastYear){yearTurn(y);W.lastYear=y}for(const s of W.states)economyHour(s,k);processMoves()}W.lastSimTick=end;W.gameMs=ms}
+
+function effective(s,n,commander,terrain='평야'){let u=s.units,cmd=commander?commander.command:s.staff.command,off=Math.min(1.15,.65+(u.nco/Math.max(1,s.army))*.9+(u.officers/Math.max(1,s.army))*12),equip=clamp((s.resources.weapons/Math.max(1,s.army))*.45+(s.resources.armor/Math.max(1,s.army))*.25+.45,.55,1.25),mix=1+(u.spears/Math.max(1,s.army))*.12+(u.archers/Math.max(1,s.army))*.1+(u.cavalry/Math.max(1,s.army))*(terrain==='평야'?.3:.05)+(u.engineers/Math.max(1,s.army))*.12;return n*(.72+cmd/180)*off*equip*mix}
+function reviewAttack(tid,n,cid){let A=me(),D=W.states[tid-1],cmd=A.officials.find(x=>x.id===cid)||A.officials[0];n=Math.floor(Math.min(n,A.army-100));if(n<100)return;
+ let intel=clamp((A.staff.strategy+cmd.strategy)/2,20,98),spread=(105-intel)/100*.65,est=D.army*(1+rnd(-spread*.35,spread*.35)),lo=Math.max(1,Math.round(est*(1-spread))),hi=Math.round(est*(1+spread)),fatPenalty=clamp(distance(1,tid)*1.2,0,35);
+ let our=effective(A,n,cmd)*(1-fatPenalty/100),defLo=effective(D,lo,D.officials[0])*(1+Math.log1p(D.wall/12000)*.15),defHi=effective(D,hi,D.officials[0])*(1+Math.log1p(D.wall/12000)*.15),rlo=our/defHi,rhi=our/defLo,mid=(rlo+rhi)/2,win=clamp(50+(mid-1)*45,5,95),unc=(100-intel)*.22;
+ let wp=[clamp(win-unc,1,99),clamp(win+unc,1,99)],ownLoss=[Math.round(n*clamp(.07+.18/(mid+.3),.05,.55)),Math.round(n*clamp(.16+.3/(mid+.25),.08,.7))],enemyLoss=[Math.round(lo*clamp(.08+mid*.08,.05,.55)),Math.round(hi*clamp(.14+mid*.15,.08,.75))];
+ W.pendingAttack={tid,n,cid,cmd:cmd.name,intel,lo,hi,fatPenalty,rlo,rhi,wp,ownLoss,enemyLoss,created:W.gameMs};log('war',`${D.name} 출정 검토 · 적 ${fmt(lo)}~${fmt(hi)}명 추정`);
+}
+function launch(){let p=W.pendingAttack;if(!p)return;let A=me();A.army-=p.n;W.movements.push({from:1,to:p.tid,troops:p.n,cid:p.cid,arrive:W.gameMs+travelMs(1,p.tid),status:'marching'});log('war',`${W.states[p.tid-1].name}으로 ${fmt(p.n)}명 출정 · 총사령관 ${p.cmd}`);W.pendingAttack=null}
+function processMoves(){for(const m of W.movements)if(m.status==='marching'&&W.gameMs>=m.arrive){combat(m);m.status='done'}W.movements=W.movements.filter(x=>x.status==='marching')}
+function combat(m){let A=W.states[m.from-1],D=W.states[m.to-1],cmd=A.officials.find(x=>x.id===m.cid)||A.officials[0],ap=effective(A,m.troops,cmd)*(1-clamp(distance(m.from,m.to)*.012,0,.35)),dp=effective(D,D.army,D.officials[0])*(1+Math.log1p(D.wall/12000)*.15),ratio=ap/Math.max(1,dp),aLoss=Math.round(m.troops*clamp(.12+.22/(ratio+.35)*rnd(.85,1.15),.05,.7)),dLoss=Math.round(D.army*clamp(.1+ratio*.13*rnd(.85,1.15),.04,.72)),surv=Math.max(0,m.troops-aLoss),win=ratio*rnd(.88,1.12)>1;
+ A.pop=Math.max(0,A.pop-aLoss);D.pop=Math.max(0,D.pop-dLoss);D.army=Math.max(0,D.army-dLoss);A.army+=surv;W.battles.unshift({t:W.gameMs,from:m.from,to:m.to,a0:m.troops,d0:D.army+dLoss,aLoss,dLoss,ratio,win,cmd:cmd.name});if(W.battles.length>300)W.battles.length=300;log('war',`${A.name} vs ${D.name} · ${win?'공격 성공':'방어 성공'} · 전사 ${fmt(aLoss)}:${fmt(dLoss)}`);
+}
+function tradeRice(q,buy){let s=me();q=Math.max(0,Math.floor(q));if(buy){q=Math.min(q,Math.floor(s.privateRice),Math.floor(s.treasury/s.ricePrice));let c=q*s.ricePrice;s.stateRice+=q;s.privateRice-=q;s.treasury-=c;s.privateCash+=c;log('economy',`쌀 ${fmt(q)}석 국가 매입`)}else{q=Math.min(q,Math.floor(s.stateRice),Math.floor(s.privateCash/s.ricePrice));let c=q*s.ricePrice;s.stateRice-=q;s.privateRice+=q;s.treasury+=c;s.privateCash-=c;log('economy',`쌀 ${fmt(q)}석 국가 매각`)}}
+function avgPrice(a){return a.length?a.reduce((x,y)=>x+y.p,0)/a.length:me().ricePrice}
+function occupations(s){let civ=Math.max(0,s.pop-s.army-s.trainees),x=[['농민',.29],['광부',.06],['벌목꾼',.055],['어부·사냥꾼',.045],['대장장이·무기공',.055],['목수·수레공',.045],['직조·갑옷공',.04],['상인',.08],['운송업',.04],['교사·학자',.025],['의원',.012],['법률가',.012],['공무원',.035],['치안·수사',.02],['실업·빈민',.066]];return x.map(z=>[z[0],Math.round(civ*z[1])])}
+function draw(canvas,data,key){if(!canvas)return;let dpr=devicePixelRatio||1,w=canvas.clientWidth,h=canvas.clientHeight;canvas.width=w*dpr;canvas.height=h*dpr;let c=canvas.getContext('2d');c.scale(dpr,dpr);c.clearRect(0,0,w,h);if(data.length<2){c.fillStyle='#9ca3af';c.fillText('데이터가 쌓이면 그래프가 표시됩니다.',12,25);return}let vals=data.map(x=>x[key]),mn=Math.min(...vals),mx=Math.max(...vals),pad=18;c.strokeStyle='#94a3b8';c.lineWidth=2;c.beginPath();data.forEach((x,i)=>{let xx=pad+i*(w-pad*2)/(data.length-1),yy=h-pad-(x[key]-mn)/Math.max(.001,mx-mn)*(h-pad*2);i?c.lineTo(xx,yy):c.moveTo(xx,yy)});c.stroke();c.fillStyle='#9ca3af';c.fillText(mx.toFixed(1),5,12);c.fillText(mn.toFixed(1),5,h-4)}
+
+function render(){
+ let M=me(),g=gp();$('#clock').textContent=`세계력 ${g.y}년 ${g.mo}월 ${g.d}일 ${String(g.h).padStart(2,'0')}:${String(g.mi).padStart(2,'0')}:${String(g.se).padStart(2,'0')}`;
+ $('#summary').innerHTML=[['국고',fmt(M.treasury)+'엽전'],['인구',fmt(M.pop)+'명'],['정규병',fmt(M.army)+'명'],['훈련병',fmt(M.trainees)+'명'],['쌀',fmt(M.stateRice)+'석'],['쌀값',M.ricePrice.toFixed(1)+'엽전'],['공직청렴',avgIntegrity(M).toFixed(0)],['부패지수',M.corruption.toFixed(1)]].map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="big">${x[1]}</div></div>`).join('');
+ $('#realmBody').innerHTML=`<div class="grid2"><div class="card"><b>작황 ${M.lastHarvest}</b><br>농지 ${M.farmland.toFixed(1)} · 농업효율 ${(M.agri*100).toFixed(0)}%<br>범죄지수 ${M.crime.toFixed(1)} · 부패지수 ${M.corruption.toFixed(1)}</div><div class="card"><b>운영 원칙</b><br>시장·직업·수사·재판·행정은 자동 처리됩니다.<br>국가는 정책·예산·고위인사·특별조사·전쟁을 결정합니다.</div></div>`;
+ $('#popBody').innerHTML=`<div class="cards">${occupations(M).map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="big">${fmt(x[1])}</div></div>`).join('')}</div>`;
+ $('#candidateBody').innerHTML=`<div class="scroll"><table><thead><tr><th>이름</th><th>분야</th><th>능력</th><th>통솔</th><th>전략</th><th>학습</th><th>청렴</th><th>잠재</th><th></th></tr></thead><tbody>${M.candidates.map(p=>`<tr><td>${p.name}</td><td>${p.role}</td><td>${p.skill}</td><td>${p.command}</td><td>${p.strategy}</td><td>${p.learning}</td><td>${p.integrity}</td><td>${p.potential}</td><td><button data-hire="${p.id}">등용</button></td></tr>`).join('')}</tbody></table></div>`;
+ $('#officialBody').innerHTML=`<div class="scroll"><table><thead><tr><th>이름</th><th>부처</th><th>직함</th><th>분야</th><th>능력</th><th>통솔</th><th>청렴</th><th>재산</th><th>급여</th></tr></thead><tbody>${M.officials.map(p=>`<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.title}</td><td>${p.role}</td><td>${p.skill}</td><td>${p.command}</td><td>${p.integrity}</td><td>${fmt(p.wealth)}</td><td>${p.salary}</td></tr>`).join('')}</tbody></table></div>`;
+ $('#trainingBody').innerHTML=`<div class="row"><select id="trainPerson">${M.officials.map(p=>`<option value="${p.id}">${p.name} · ${p.dept}</option>`).join('')}</select><button id="trainOne">개인 교육</button><select id="trainDept">${depts.map(d=>`<option>${d}</option>`).join('')}</select><button id="trainGroup">부처 집단교육</button></div><div class="muted">전문능력은 교육·경력으로 성장하지만 청렴도는 쉽게 바뀌지 않습니다.</div>`;
+ $('#serviceBody').innerHTML=`<div class="grid3"><div class="card"><b>복무기간</b><div class="row"><input id="serviceYears" type="number" min="1" max="10" value="${M.serviceYears}"><button id="setService">변경</button></div></div><div class="card"><b>연간 징집</b><div class="big">${fmt(M.recruitedThisYear)} / ${fmt(M.recruitPolicy)}</div><div class="row"><input id="recruitPolicy" type="number" min="0" value="${M.recruitPolicy}"><button id="setRecruit">변경/철회</button></div></div><div class="card"><b>연간 전역</b><div class="big">${fmt(M.dischargedThisYear)} / ${fmt(M.dischargePolicy)}</div><div class="row"><input id="dischargePolicy" type="number" min="0" value="${M.dischargePolicy}"><button id="setDischarge">변경</button></div><span class="muted">정책상 순증 ${fmt(M.recruitPolicy-M.dischargePolicy)}명/년</span></div></div><div class="cards">${M.serviceCohorts.map((n,i)=>`<div class="card">${i+1}년차<div class="big">${fmt(n)}명</div></div>`).join('')}</div>`;
+ let u=M.units,r=M.resources;$('#armyBody').innerHTML=`<div class="cards">${[['보병',u.infantry],['창병',u.spears],['궁병',u.archers],['기병',u.cavalry],['공병',u.engineers],['대포병',u.artillery],['수송대',u.logistics],['군악대',u.band],['부사관',u.nco],['장교',u.officers],['투석기',r.catapults+'대'],['대포',r.cannons+'문'],['수레',r.carts+'대']].map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="big">${typeof x[1]==='number'?fmt(x[1]):x[1]}</div></div>`).join('')}</div><div class="muted">전투력 = 병력 × 병과편제 × 장비 × 부사관/장교 × 장군 통솔 × 병참 × 지형.</div>`;
+ let oldT=+($('#target')?.value||2);$('#target').innerHTML=W.states.slice(1).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');$('#target').value=oldT;let oldC=$('#commander')?.value,commanders=M.officials.filter(p=>p.role==='장수'||p.command>=65);$('#commander').innerHTML=commanders.map(p=>`<option value="${p.id}">${p.name} · 통솔 ${p.command} / 전략 ${p.strategy}</option>`).join('');if(oldC)$('#commander').value=oldC;
+ let p=W.pendingAttack;$('#attackReview').innerHTML=p?`<div class="card warn"><b>${W.states[p.tid-1].name} 출정 검토서</b><br>총사령관 ${p.cmd} · 출정 ${fmt(p.n)}명 · 본성잔류 ${fmt(M.army-p.n)}명<br>적 병력 추정 ${fmt(p.lo)}~${fmt(p.hi)}명 · 정보신뢰 ${p.intel.toFixed(0)}%<br><b>행군 피로도 ${p.fatPenalty.toFixed(1)}%</b> · 예상 유효전력비 ${p.rlo.toFixed(2)}~${p.rhi.toFixed(2)}<br>승리 가능성 ${p.wp[0].toFixed(0)}~${p.wp[1].toFixed(0)}% · 아군 예상피해 ${fmt(p.ownLoss[0])}~${fmt(p.ownLoss[1])}명<br>적 예상피해 ${fmt(p.enemyLoss[0])}~${fmt(p.enemyLoss[1])}명 · 예상 생환 ${fmt(p.n-p.ownLoss[1])}~${fmt(p.n-p.ownLoss[0])}명<div class="row"><button id="approveAttack" class="primary">출정 승인</button><button id="cancelAttack">철회</button></div></div>`:'<div class="muted">적 실제 병력은 숨기고 정보력에 따른 범위로 예측합니다.</div>';
+ $('#movements').innerHTML=W.movements.length?W.movements.map(m=>`<div class="card">${W.states[m.from-1].name} → ${W.states[m.to-1].name} · ${fmt(m.troops)}명 · 도착 ${stamp(m.arrive)}</div>`).join(''):'<span class="muted">이동 없음</span>';
+ let b=W.battles[0];$('#combatLog').textContent=b?`[${stamp(b.t)}] ${W.states[b.from-1].name} vs ${W.states[b.to-1].name}\n지휘 ${b.cmd} · 초기 ${fmt(b.a0)}:${fmt(b.d0)} · 실제전력비 ${b.ratio.toFixed(2)}\n전사 ${fmt(b.aLoss)}:${fmt(b.dLoss)} · ${b.win?'공격 성공':'방어 성공'}`:'전투 기록 없음';
+ let ph=M.priceHistory,avg30=avgPrice(ph.slice(-30)),avg90=avgPrice(ph.slice(-90)),avg360=avgPrice(ph.slice(-360));$('#econBody').innerHTML=`<div class="cards"><div class="card">국고<div class="big">${fmt(M.treasury)}엽전</div></div><div class="card">민간화폐<div class="big">${fmt(M.privateCash)}엽전</div></div><div class="card">국가쌀<div class="big">${fmt(M.stateRice)}석</div></div><div class="card">민간쌀<div class="big">${fmt(M.privateRice)}석</div></div></div>`;
+ $('#riceInfo').innerHTML=`현재 ${M.ricePrice.toFixed(1)} · 30일평균 ${avg30.toFixed(1)} · 90일 ${avg90.toFixed(1)} · 1년 ${avg360.toFixed(1)} 엽전/석`;let range=+($('#priceRange')?.value||360);draw($('#priceChart'),ph.slice(-range),'p');
+ $('#industryBody').innerHTML=`<div class="cards">${Object.entries({목재:r.wood,석재:r.stone,철:r.iron,구리:r.copper,석탄:r.coal,말:r.horses,직물:r.textile,소금:r.salt,무기:r.weapons,갑옷:r.armor,화살:r.arrows}).map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="big">${fmt(x[1])}</div></div>`).join('')}</div><div class="card"><b>민간 생산망</b><br>원료생산 → 제련·가공 → 창·활·갑옷·수레·공성장비 → 상인 유통 → 국가/민간 구매<br><span class="muted">군수품은 자동 생성되는 숫자가 아니라 생산·재고·거래의 결과입니다.</span></div>`;
+ let ds=depts.map(d=>{let a=M.officials.filter(p=>p.dept===d);return[d,a.length,a.length?Math.round(a.reduce((x,p)=>x+p.skill,0)/a.length):0,a.length?Math.round(a.reduce((x,p)=>x+p.integrity,0)/a.length):0]});$('#govBody').innerHTML=`<div class="scroll"><table><thead><tr><th>조직</th><th>인원</th><th>평균능력</th><th>평균청렴</th></tr></thead><tbody>${ds.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join('')}</tbody></table></div>`;
+ $('#justiceBody').innerHTML=`<div class="cards"><div class="card">범죄지수<div class="big">${M.crime.toFixed(1)}</div></div><div class="card">부패지수<div class="big">${M.corruption.toFixed(1)}</div></div><div class="card">공직 평균청렴<div class="big">${avgIntegrity(M).toFixed(1)}</div></div></div><div class="row"><button data-investigate="audit">전국 공직자 특별감사</button><button data-investigate="military">군납비리 특별수사</button><button data-investigate="crime">치안 특별단속</button></div><div class="muted">일상 사건은 경찰→검찰→변호→법원에서 자동 처리하고 국가적 문제에만 직접 개입합니다.</div>`;
+ $('#tfBody').innerHTML=`<div class="card">특별감사팀·수사본부·결사대·정찰대 등은 전체 인재에서 적합한 구성원을 차출해 임시조직을 만듭니다.</div>${W.taskForces.slice(0,6).map(t=>`<div class="card"><b>${t.name}</b> · ${t.members.join(', ')} · 성과 ${t.score}</div>`).join('')}`;
+ let sh=M.statsHistory;$('#statsBody').innerHTML=`<div class="cards"><div class="card">현재 인구<div class="big">${fmt(M.pop)}</div></div><div class="card">병력<div class="big">${fmt(M.army)}</div></div><div class="card">국고<div class="big">${fmt(M.treasury)}</div></div><div class="card">쌀값<div class="big">${M.ricePrice.toFixed(1)}</div></div></div><div class="muted">일별 통계를 축적해 장기적인 국가 변화를 확인합니다.</div>`;draw($('#statsChart'),sh.slice(-360),'pop');
+ $('#worldTable').innerHTML=W.states.map(s=>`<tr class="${s.id===1?'rankme':''}"><td>${s.name}</td><td>${fmt(s.pop)}</td><td>${fmt(Math.round(s.army/500)*500)} 내외</td><td>${fmt(Math.round(s.wall/1000)*1000)}급</td><td>${s.ricePrice.toFixed(1)}</td><td>${s.lastHarvest}</td></tr>`).join('');
+ renderLogs();renderDev();
+}
+function renderLogs(){let f=$('#logFilter')?.value||'all';$('#eventLog').textContent=W.events.filter(e=>f==='all'||e.type===f).slice(0,300).map(e=>`[${stamp(e.t)}] [${e.type}] ${e.msg}`).join('\n')||'기록 없음'}
+function renderDev(){let key=$('#rankBy')?.value||'treasury',arr=[...W.states].sort((a,b)=>b[key]-a[key]);$('#auditCards').innerHTML=[['세계인구',W.states.reduce((a,s)=>a+s.pop,0)],['세계병력',W.states.reduce((a,s)=>a+s.army,0)],['전투기록',W.battles.length],['특별조직',W.taskForces.length]].map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="big">${fmt(x[1])}</div></div>`).join('');
+ $('#devTable').innerHTML=arr.map((s,i)=>`<tr class="clickrow ${s.id===1?'rankme':''}" data-audit="${s.id}"><td>${i+1}</td><td>${s.name}</td><td>${fmt(s.treasury)}</td><td>${fmt(s.privateCash)}</td><td>${fmt(s.pop)}</td><td>${fmt(s.army)}</td><td>${fmt(s.wall)}</td><td>${s.staff.strategy.toFixed(0)}</td><td>${s.corruption.toFixed(1)}</td></tr>`).join('');
+ let s=W.states[(W.selectedAudit||1)-1],r=s.resources;$('#devDetail').innerHTML=`<div class="card"><h3>${s.name} 실제 상세정보</h3><div class="grid3"><div>실제 인구 <b>${fmt(s.pop)}</b><br>실제 병력 <b>${fmt(s.army)}</b><br>훈련병 ${fmt(s.trainees)}<br>복무 ${s.serviceYears}년</div><div>국고 ${fmt(s.treasury)}<br>민간화폐 ${fmt(s.privateCash)}<br>국가쌀 ${fmt(s.stateRice)}<br>민간쌀 ${fmt(s.privateRice)}</div><div>성벽 ${fmt(s.wall)}<br>쌀값 ${s.ricePrice.toFixed(2)}<br>범죄 ${s.crime.toFixed(1)}<br>부패 ${s.corruption.toFixed(1)}</div></div><hr>자원: 철 ${fmt(r.iron)} · 목재 ${fmt(r.wood)} · 말 ${fmt(r.horses)} · 무기 ${fmt(r.weapons)} · 갑옷 ${fmt(r.armor)}<br>참모: 전략 ${s.staff.strategy.toFixed(1)} · 통솔 ${s.staff.command.toFixed(1)} · 병참 ${s.staff.logistics.toFixed(1)} · 축성 ${s.staff.fort.toFixed(1)}<br>공무원 ${s.officials.length}명 · 평균청렴 ${avgIntegrity(s).toFixed(1)}</div>`;
+}
+function special(type){let M=me(),pool=[...M.officials].sort((a,b)=>(b.skill+b.integrity+b.strategy)-(a.skill+a.integrity+a.strategy)).slice(0,5),score=Math.round(pool.reduce((a,p)=>a+p.skill+p.integrity,0)/(pool.length*2)),name=type==='audit'?'공직자 특별감사팀':type==='military'?'군납비리 특별수사본부':'치안 특별단속본부';W.taskForces.unshift({name,members:pool.map(p=>p.name),score,t:W.gameMs});if(type==='audit'||type==='military')M.corruption=clamp(M.corruption-score/35,0,100);else M.crime=clamp(M.crime-score/35,0,100);for(const p of pool)p.experience++;log('government',`${name} 구성 · ${pool.map(p=>p.name).join(', ')} · 성과 ${score}`)}
+
+document.addEventListener('click',e=>{
+ if(e.target.matches('.tab')){document.querySelectorAll('.tab,.pane').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');$('#'+e.target.dataset.p).classList.add('active');render();return}
+ let M=me();
+ if(e.target.id==='setRecruit'){M.recruitPolicy=Math.max(0,+$('#recruitPolicy').value||0);log('population',`연간 징집 목표 ${M.recruitPolicy}명으로 변경`)}
+ if(e.target.id==='setDischarge'){M.dischargePolicy=Math.max(0,+$('#dischargePolicy').value||0);log('population',`연간 전역 목표 ${M.dischargePolicy}명으로 변경`)}
+ if(e.target.id==='setService'){M.serviceYears=clamp(+$('#serviceYears').value||3,1,10);while(M.serviceCohorts.length<M.serviceYears)M.serviceCohorts.push(0);while(M.serviceCohorts.length>M.serviceYears)M.serviceCohorts[M.serviceCohorts.length-2]=(M.serviceCohorts[M.serviceCohorts.length-2]||0)+M.serviceCohorts.pop();log('population',`복무기간 ${M.serviceYears}년으로 변경`)}
+ if(e.target.dataset.hire){let i=M.candidates.findIndex(p=>p.id===e.target.dataset.hire);if(i>=0){let p=M.candidates.splice(i,1)[0];p.dept=depts[Math.floor(Math.random()*depts.length)];p.title='실무관';M.officials.push(p);M.candidates.push(person(Math.floor(Date.now()%100000),Math.floor(Math.random()*20)));log('government',`${p.name} 등용 · ${p.dept} ${p.title}`)}}
+ if(e.target.id==='trainOne'){let p=M.officials.find(x=>x.id===$('#trainPerson').value);if(p){p.skill=clamp(p.skill+1+Math.round(p.learning/50),0,100);p.experience++;log('government',`${p.name} 개인교육 실시`)}}
+ if(e.target.id==='trainGroup'){let d=$('#trainDept').value;M.officials.filter(p=>p.dept===d).forEach(p=>{p.skill=clamp(p.skill+1,0,100);p.experience++});log('government',`${d} 집단교육 실시`)}
+ if(e.target.id==='reviewAttack')reviewAttack(+$('#target').value,+$('#attackN').value,$('#commander').value);
+ if(e.target.id==='approveAttack')launch();if(e.target.id==='cancelAttack'){W.pendingAttack=null;log('war','출정 검토 철회')}
+ if(e.target.id==='buyRice')tradeRice(+$('#riceQty').value,true);if(e.target.id==='sellRice')tradeRice(+$('#riceQty').value,false);
+ if(e.target.dataset.investigate)special(e.target.dataset.investigate);if(e.target.dataset.audit){W.selectedAudit=+e.target.dataset.audit;renderDev()}
+ if(e.target.id==='reset'&&confirm('현재 세계를 초기화할까요?')){W=init();migrate()}
+ save();render();
+});
+document.addEventListener('change',e=>{if(e.target.id==='rankBy')renderDev();if(e.target.id==='logFilter')renderLogs();if(e.target.id==='priceRange')render()});
+function advance(){let now=Date.now(),delta=Math.max(0,now-(W.lastReal||now));W.lastReal=now;simulateTo(W.gameMs+delta);save()}
+advance();render();setInterval(()=>{advance();render()},1000);
+})();
+</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
+</body></html>
