@@ -1,0 +1,11 @@
+{
+  "name": "100성 국가경영 — WORLD #1",
+  "short_name": "100성",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "ko",
+  "description": "100개국 지속형 국가경영 시뮬레이션"
+}
